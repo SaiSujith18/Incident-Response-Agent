@@ -229,7 +229,7 @@ What Failed:
         result = await retain_memory(
             content=memory_content,
             context="incident resolution",
-        )
+          )
 
         print()
         print("[RESOLVE] Memory stored successfully.")
@@ -302,15 +302,16 @@ async def create_postmortem(request: Postmortem):
 
         # -------------------------------------------------
         # Store postmortem in Hindsight
+        # IMPORTANT: retain_memory is ASYNC
         # -------------------------------------------------
 
-        result = retain_memory(
+        result = await retain_memory(
             content=memory_content,
-            context="production incident postmortem",
+            context="incident postmortem",
         )
 
         print()
-        print("[POSTMORTEM] Successfully stored in Hindsight.")
+        print("[POSTMORTEM] Memory stored successfully.")
         print(result)
 
         print("=" * 60)
