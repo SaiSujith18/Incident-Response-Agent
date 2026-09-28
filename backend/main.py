@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+
 from backend.models.postmortem import Postmortem
 from backend.services.postmortem_service import PostmortemService
 from backend.models.incident import ResolutionRequest
@@ -50,8 +51,10 @@ async def log_requests(request: Request, call_next):
     print("=" * 60)
 
     try:
-
         response = await call_next(request)
+
+        # Do NOT use response.reason_phrase.
+        # Starlette StreamingResponse does not provide it.
 
         print(
             f"[RESPONSE] {request.method} "
@@ -92,6 +95,7 @@ class IncidentRequest(BaseModel):
 
 agent = IncidentAgent()
 postmortem_service = PostmortemService()
+
 
 # =========================================================
 # STARTUP
@@ -223,13 +227,13 @@ What Failed:
 """
 
         # -------------------------------------------------
-        # Store resolution asynchronously
+        # Store resolution in Hindsight
         # -------------------------------------------------
 
         result = await retain_memory(
             content=memory_content,
             context="incident resolution",
-          )
+        )
 
         print()
         print("[RESOLVE] Memory stored successfully.")
@@ -255,12 +259,15 @@ What Failed:
             detail=str(exc),
         )
 
+
 # =========================================================
 # POSTMORTEM → HINDSIGHT
 # =========================================================
 
 @app.post("/postmortem")
-async def create_postmortem(request: Postmortem):
+async def create_postmortem(
+    request: Postmortem,
+):
 
     try:
 
@@ -302,7 +309,6 @@ async def create_postmortem(request: Postmortem):
 
         # -------------------------------------------------
         # Store postmortem in Hindsight
-        # IMPORTANT: retain_memory is ASYNC
         # -------------------------------------------------
 
         result = await retain_memory(
@@ -325,7 +331,7 @@ async def create_postmortem(request: Postmortem):
             "memory": memory_content,
         }
 
-    except Exception as e:
+    except Exception as exc:
 
         import traceback
 
@@ -339,8 +345,71 @@ async def create_postmortem(request: Postmortem):
         print("=" * 60)
         print()
 
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc),
+        )
+
+
+# =========================================================
+# MULTI-INCIDENT PATTERN DETECTION
+# =========================================================
+
+@app.post("/patterns")
+async def detect_incident_patterns(
+    request: IncidentRequest,
+):
+
+    try:
+
+        print()
+        print("=" * 60)
+        print("[PATTERN] Multi-incident pattern detection")
+        print("=" * 60)
+
+        print(f"Current incident: {request.incident}")
+
+        # -------------------------------------------------
+        # Ask IncidentAgent to detect patterns across
+        # historical Hindsight memories
+        # -------------------------------------------------
+
+        result = await agent.detect_patterns(
+            request.incident
+        )
+
+        print("[PATTERN] Pattern detection completed.")
+
+        print(
+            f"[PATTERN] Historical evidence count: "
+            f"{result['evidence_count']}"
+        )
+
+        print("=" * 60)
+        print()
+
         return {
-            "status": "error",
-            "incident_id": request.incident_id,
-            "error": str(e),
+            "status": "success",
+            "pattern": result["pattern"],
+            "evidence_count": result["evidence_count"],
+            "memories": result["memories"],
         }
+
+    except Exception as exc:
+
+        import traceback
+
+        print()
+        print("=" * 60)
+        print("[PATTERN ERROR]")
+        print("=" * 60)
+
+        traceback.print_exc()
+
+        print("=" * 60)
+        print()
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc),
+        )

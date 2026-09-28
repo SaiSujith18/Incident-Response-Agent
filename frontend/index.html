@@ -1,67 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>MemoryOps Demo</title>
-
-    <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-    <div class="container">
-
-        <header>
-            <h1>MemoryOps</h1>
-            <p>AI Incident Response Agent</p>
-        </header>
-
-        <section class="incident-panel">
-
-            <h2>Current Incident</h2>
-
-            <textarea
-                id="incidentInput"
-                placeholder="Describe the production incident..."
-            ></textarea>
-
-            <button id="analyzeButton">
-                Analyze Incident
-            </button>
-
-            <p id="status"></p>
-
-        </section>
-
-
-        <section id="results" class="results hidden">
-
-            <div class="card">
-
-                <h2>Agent Analysis</h2>
-
-                <pre id="analysis"></pre>
-
-            </div>
-
-
-            <div class="card">
-
-                <h2>Historical Experience</h2>
-
-                <div id="memories"></div>
-
-            </div>
-
-        </section>
-
-    </div>
-
-    <script src="app.js"></script>
-
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
